@@ -1,2 +1,97 @@
-# ansible
-ansible learning
+# ansible ansible learning
+# Dockerfile – Slave
+FROM ubuntu:22.04
+RUN apt-get update && \
+    apt-get install -y openssh-server python3 && \
+    mkdir /var/run/sshd
+# set root password (simple for lab)
+RUN echo 'root:root' | chpasswd
+# allow root login
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
+
+# Docker - Master
+FROM ubuntu:22.04
+RUN apt-get update && \
+    apt-get install -y ansible openssh-client python3 sshpass iputils-ping
+WORKDIR /ansible
+CMD ["bash"]
+
+# In Git Bash create the two images
+docker build -t shlomid100/ansible-slave -f Dockerfile.slave .
+docker build -t shlomid100/ansible-master -f Dockerfile.master .
+
+# Create the bridge to connect master & slave
+docker network create -d bridge myansiblenet
+
+# Create the Containers of master & slave, we can first create the network and then in container command connect it to the network OR
+# OR create the container and later connect it to the network, first in create connect to network
+docker run -d --name slave1 --network myansiblenet shlomid100/ansible-slave #slaves → background so only -d
+docker run -d --name slave2 --network myansiblenet shlomid100/ansible-slave #slaves → background so only -d
+docker run -idt --name master --network myansiblenet shlomid100/ansible-master #master need -it → interactive (so you can run ansible)
+# OR
+docker run -d --name slave1  ansible-slave  --> Then run docker network connect myansiblenet slave1
+docker run -d --name slave2  ansible-slave  --> Then run docker network connect myansiblenet slave2
+docker run -it --name master ansible-master --> Then run docker network connect myansiblenet master
+
+# Go inside the master
+docker exec -it master bash // bash since it's ubuntu
+
+# Ping to the slaves
+ping slave1 OR ping slave2 //172.19.0.2, 172.19.0.3, master 172.19.0.4
+
+# Take the IP from the container OR can be taken also from ping comand from inside the master.
+docker inspect slave1 | grep IP
+
+# We can do SSH from master to slaves and run on it commands, For first time need to do it to all slaves as it's asking for fingerpring and we set yes, if not when later we use the
+# global ping to all slaves with inventory it will failed as it's not waiting for approve yes for fingerprint, user/pass for slave we set in Dockefile.slave in line: RUN echo 'root:root' | chpasswd
+# we can overcome it by few ways: in docker run add -e ANSIBLE_HOST_KEY_CHECKING=False, in Dockerfile add ENV ANSIBLE_HOST_KEY_CHECKING=False. just run befor ping:
+# export ANSIBLE_HOST_KEY_CHECKING=False, we can add host to known_hosts and thus no need permision like: 
+ssh root@slave1, ssh root@slave2 
+
+
+# Create the inventory file with all nodes details so we can control from master=control machine on groups of nodes, we don't have vim on master so use cat instaed of install
+cat > inventory <<'EOF'
+[slaves]
+slave1 ansible_user=root ansible_password=root
+slave2 ansible_user=root ansible_password=root
+EOF
+
+# Change access to the file
+chmod 777 inventory
+
+# Ping to all slaves in one command
+ansible slaves -i inventory -m ping
+
+# I added new slave3 and i will add it to the network and add it to the known_hosts
+docker run -d --name slave3 --network myansiblenet shlomid100/ansible-slave
+
+# Take it's IP
+docker inspect slave3 | grep IP // 172.19.0.5
+
+# If not connect the container to net do it manually
+docker network connect myansiblenet slave3
+
+# Add the slave3 to the known_hosts, Inside the master container run: it connects to slave2 then fetches its SSH fingerprint then appends it to to the file content.
+ssh-keyscan slave2 >> /root/.ssh/known_hosts
+
+# Check it appendded 
+cat /root/.ssh/known_hosts
+
+# Add new slave to inventory file:
+echo "slave3 ansible_user=root ansible_password=root" >> inventory
+
+
+
+
+
+
+
+
+
+
+
+
+
+
