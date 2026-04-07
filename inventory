@@ -1,0 +1,4 @@
+[slaves]
+slave1 ansible_user=root ansible_password=root
+slave2 ansible_user=root ansible_password=root
+slave3 ansible_user=root ansible_password=root
