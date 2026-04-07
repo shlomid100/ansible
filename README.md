@@ -75,6 +75,8 @@ docker network connect myansiblenet slave3
 
 # Add the slave3 to the known_hosts, Inside the master container run: it connects to slave2 then fetches its SSH fingerprint then appends it to to the file content.
 ssh-keyscan slave2 >> /root/.ssh/known_hosts
+#OR for all together
+ssh-keyscan slave1 slave2 slave3 >> /root/.ssh/known_hosts
 
 # Check it appendded 
 cat /root/.ssh/known_hosts
@@ -115,7 +117,45 @@ slave2 | SUCCESS => {
 docker exec -t master bash
 docker cp master:/ansible/inventory c:/temp
 
-#create the container with hostname master & with volume so always we will have the files saved in host:
+#create the container with hostname master & with volume so always we will have the files saved in host, we added MSYS_NO_PATHCONV=1 and set path in " as Bash not know to convert paths:
+MSYS_NO_PATHCONV=1 docker run -idt --name master --hostname master --network myansiblenet -v "$(pwd):/ansible" shlomid100/ansible-master
+
+PLAYBOOK:
+I created inside container playbook.yml like below :
+  1 - hosts: slaves
+  2   become: yes --> installing packages requires root privileges, Even if you connect as root, it’s best practice (and avoids surprises).
+  3   tasks:
+  4     - name: install apache
+  5       apt:
+  6         name: httpd
+  7         state: present
+  8         update_cache: yes --> Run the equivalent of:apt update before installing the package. this work like this in ubuntu if not do apt update first the system might not know about new packages or may try to install                                   outdated versions or even fail with “package not found”
+
+  # Run the playbook to install the all slaves the apache2:
+  ansible-playbook -i inventory playbook.yml
+
+reoults:
+root@master:/ansible# ansible-playbook -i inventory playbook.yml
+
+PLAY [slaves] *****************************************************************************************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ********************************************************************************************************************************************************************************************************************************************************
+ok: [slave2]
+ok: [slave3]
+ok: [slave1]
+
+TASK [install apache] *********************************************************************************************************************************************************************************************************************************************************
+[WARNING]: Updating cache and auto-installing missing dependency: python3-apt
+changed: [slave2]
+changed: [slave3]
+changed: [slave1]
+
+PLAY RECAP ********************************************************************************************************************************************************************************************************************************************************************
+slave1                     : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+slave2                     : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+slave3                     : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
 
 
 
