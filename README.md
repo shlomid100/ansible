@@ -131,29 +131,10 @@ I created inside container playbook.yml like below :
   7         state: present
   8         update_cache: yes --> Run the equivalent of:apt update before installing the package. this work like this in ubuntu if not do apt update first the system might not know about new packages or may try to install                                   outdated versions or even fail with “package not found”
 
-  # Run the playbook to install the all slaves the apache2:
+# Run the playbook to install the all slaves the apache2:
   ansible-playbook -i inventory playbook.yml
-
-reoults:
-root@master:/ansible# ansible-playbook -i inventory playbook.yml
-
-PLAY [slaves] *****************************************************************************************************************************************************************************************************************************************************************
-
-TASK [Gathering Facts] ********************************************************************************************************************************************************************************************************************************************************
-ok: [slave2]
-ok: [slave3]
-ok: [slave1]
-
-TASK [install apache] *********************************************************************************************************************************************************************************************************************************************************
-[WARNING]: Updating cache and auto-installing missing dependency: python3-apt
-changed: [slave2]
-changed: [slave3]
-changed: [slave1]
-
-PLAY RECAP ********************************************************************************************************************************************************************************************************************************************************************
-slave1                     : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-slave2                     : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-slave3                     : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+# Check if service up: 
+  ansible -i inventory slaves -m shell -a "service apache2 status"
 
 
 
@@ -168,5 +149,4 @@ slave3                     : ok=2    changed=1    unreachable=0    failed=0    s
 
 
 
-
-
+  
