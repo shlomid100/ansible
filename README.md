@@ -82,6 +82,35 @@ cat /root/.ssh/known_hosts
 # Add new slave to inventory file:
 echo "slave3 ansible_user=root ansible_password=root" >> inventory
 
+# Go inside the master and run ping with inventory to all slaves
+docker exec -it master bash
+ansible slaves -i inventory -m ping
+
+# resoult:
+slave1 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+slave3 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+slave2 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+
+
 
 
 
