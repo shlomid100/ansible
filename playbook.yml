@@ -1,7 +1,14 @@
 - hosts: slaves
-   tasks:
--	name: install apache
- yum:
-    name: httpd 
-    state: present
+  become: yes
+  tasks:
+    - name: install apache
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
 
+    - name: start apache
+      service:
+        name: apache2
+        state: started
+        enabled: yes
