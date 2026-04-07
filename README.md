@@ -109,7 +109,13 @@ slave2 | SUCCESS => {
     "ping": "pong"
 }
 
+*********************************************************
 
+#will delete the container and inventory file will be deleted so before delete copy the file to host machine c:/temp, from inside master: 
+docker exec -t master bash
+docker cp master:/ansible/inventory c:/temp
+
+#create the container with hostname master & with volume so always we will have the files saved in host:
 
 
 
