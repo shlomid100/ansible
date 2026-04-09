@@ -27,8 +27,8 @@ docker network create -d bridge myansiblenet
 
 # Create the Containers of master & slave, we can first create the network and then in container command connect it to the network OR
 # OR create the container and later connect it to the network, first in create connect to network
-docker run -d --name slave1 --network myansiblenet shlomid100/ansible-slave #slaves → background so only -d
-docker run -d --name slave2 --network myansiblenet shlomid100/ansible-slave #slaves → background so only -d
+docker run -d --name slave1 --network myansiblenet -p 8080:80 shlomid100/ansible-slave #slaves → background so only -d
+docker run -d --name slave2 --network myansiblenet -p 8080:80 shlomid100/ansible-slave #slaves → background so only -d
 docker run -idt --name master --network myansiblenet shlomid100/ansible-master #master need -it → interactive (so you can run ansible)
 # OR
 docker run -d --name slave1  ansible-slave  --> Then run docker network connect myansiblenet slave1
