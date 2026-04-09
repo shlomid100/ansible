@@ -122,19 +122,28 @@ MSYS_NO_PATHCONV=1 docker run -idt --name master --hostname master --network mya
 
 PLAYBOOK:
 I created inside container playbook.yml like below :
-  1 - hosts: slaves
-  2   become: yes --> installing packages requires root privileges, Even if you connect as root, it’s best practice (and avoids surprises).
-  3   tasks:
-  4     - name: install apache
-  5       apt:
-  6         name: httpd
-  7         state: present
-  8         update_cache: yes --> Run the equivalent of:apt update before installing the package. this work like this in ubuntu if not do apt update first the system might not know about new packages or may try to install                                   outdated versions or even fail with “package not found”
+   - hosts: slaves
+     become: yes --> installing packages requires root privileges, Even if you connect as root, it’s best practice (and avoids surprises).
+     tasks:
+       - name: install apache
+         apt:
+           name: httpd
+           state: present
+           update_cache: yes --> Run the equivalent of:apt update before installing the package. this work like this in ubuntu if not do apt update first the system might not know about new packages or may try to install                                   outdated versions or even fail with “package not found”
+       - name: start apache
+         service:
+            name: apache2
+            state: started
+            enabled: yes
 
 # Run the playbook to install the all slaves the apache2:
   ansible-playbook -i inventory playbook.yml
 # Check if service up: 
   ansible -i inventory slaves -m shell -a "service apache2 status"
+
+# Push the Images to DockerHub
+docker push shlomid100/ansible-master
+docker push shlomid100/ansible-slave
 
 
 
