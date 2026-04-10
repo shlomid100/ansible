@@ -1,5 +1,7 @@
-# ansible ansible learning
-# Dockerfile – Slave
+# ansible learning
+----------------------
+
+# Dockerfile.slave
 FROM ubuntu:22.04
 RUN apt-get update && \
     apt-get install -y openssh-server python3 && \
@@ -11,7 +13,7 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 
-# Docker - Master
+# Docker.master
 FROM ubuntu:22.04
 RUN apt-get update && \
     apt-get install -y ansible openssh-client python3 sshpass iputils-ping
