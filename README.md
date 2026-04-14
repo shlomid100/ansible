@@ -20,11 +20,11 @@ RUN apt-get update && \
 WORKDIR /ansible
 CMD ["bash"]
 
-# In Git Bash create the two images
+#-------------In Git Bash create the two images
 docker build -t shlomid100/ansible-slave -f Dockerfile.slave .
 docker build -t shlomid100/ansible-master -f Dockerfile.master .
 
-# Create the bridge to connect master & slave
+#-------------Create the bridge to connect master & slave
 docker network create -d bridge myansiblenet
 
 # Create the Containers of master & slave, we can first create the network and then in container command connect it to the network OR
