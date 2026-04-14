@@ -13,7 +13,7 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 
-#Dockerfile.master
+# Dockerfile.master
 FROM ubuntu:22.04
 RUN apt-get update && \
     apt-get install -y ansible openssh-client python3 sshpass iputils-ping
