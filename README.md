@@ -1,19 +1,19 @@
 # ansible learning
 ----------------------
 
-# Dockerfile.slave
+#Dockerfile.slave
 FROM ubuntu:22.04
 RUN apt-get update && \
     apt-get install -y openssh-server python3 && \
     mkdir /var/run/sshd
-# set root password (simple for lab)
+#set root password (simple for lab)
 RUN echo 'root:root' | chpasswd
-# allow root login
+#allow root login
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 
-# Docker.master
+#Dockerfile.master
 FROM ubuntu:22.04
 RUN apt-get update && \
     apt-get install -y ansible openssh-client python3 sshpass iputils-ping
