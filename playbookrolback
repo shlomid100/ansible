@@ -1,0 +1,14 @@
+- hosts: slaves
+  become: yes
+  tasks:
+    - name: install apache
+      apt:
+        name: apache2
+        state: absent
+        update_cache: yes
+
+    - name: start apache
+      service:
+        name: apache2
+        state: stopped
+        enabled: yes
