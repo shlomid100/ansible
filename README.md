@@ -1,5 +1,6 @@
 # ansible learning
 ----------------------
+C:\Users\Shlomo\devops\controller-slaves
 
 # Dockerfile.slave
 FROM ubuntu:22.04
