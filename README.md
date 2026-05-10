@@ -9,7 +9,8 @@ RUN apt-get update && \
 #set root password (simple for lab)
 RUN echo 'root:root' | chpasswd
 #allow root login
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config --> This command edits the SSH server config file inside Linux/container.sed=stream editor (find/replace tool) -i=edit file in  
+                                       place, s/old/new/-->So it changes this line:#PermitRootLogin prohibit-password TO PermitRootLogin yes,inside /ect/ssh/sshd_config Meaning allow SSH login directly as root user.
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 
@@ -30,7 +31,7 @@ docker network create -d bridge myansiblenet
 # Create the Containers of master & slave, we can first create the network and then in container command connect it to the network OR
 # OR create the container and later connect it to the network, first in create connect to network
 docker run -d --name slave1 --network myansiblenet -p 8080:80 shlomid100/ansible-slave #slaves → background so only -d
-docker run -d --name slave2 --network myansiblenet -p 8080:80 shlomid100/ansible-slave #slaves → background so only -d
+docker run -d --name slave2 --network myansiblenet -p 8081:80 shlomid100/ansible-slave #slaves → background so only -d
 docker run -idt --name master --network myansiblenet shlomid100/ansible-master #master need -it → interactive (so you can run ansible)
 # OR
 docker run -d --name slave1  ansible-slave  --> Then run docker network connect myansiblenet slave1
@@ -47,9 +48,9 @@ ping slave1 OR ping slave2 //172.19.0.2, 172.19.0.3, master 172.19.0.4
 docker inspect slave1 | grep IP
 
 # We can do SSH from master to slaves and run on it commands, For first time need to do it to all slaves as it's asking for fingerpring and we set yes, if not when later we use the
-# global ping to all slaves with inventory it will failed as it's not waiting for approve yes for fingerprint, user/pass for slave we set in Dockefile.slave in line: RUN echo 'root:root' | chpasswd
+# ansible-playboo.yml global ping to all slaves with inventory it will failed as it's not waiting for approve yes for fingerprint, user/pass for slave we set in Dockefile.slave in line: RUN echo 'root:root' | chpasswd
 # we can overcome it by few ways: in docker run add -e ANSIBLE_HOST_KEY_CHECKING=False, in Dockerfile add ENV ANSIBLE_HOST_KEY_CHECKING=False. just run befor ping:
-# export ANSIBLE_HOST_KEY_CHECKING=False, we can add host to known_hosts and thus no need permision like: 
+# export ANSIBLE_HOST_KEY_CHECKING=False, OR we can add host to known_hosts and thus no need permision like: 
 ssh root@slave1, ssh root@slave2 
 
 
@@ -113,7 +114,7 @@ slave2 | SUCCESS => {
     "ping": "pong"
 }
 
-*********************************************************
+********************************************************* Volume *********************************************************************
 
 #will delete the container and inventory file will be deleted so before delete copy the file to host machine c:/temp, from inside master: 
 docker exec -t master bash
@@ -142,6 +143,8 @@ I created inside container playbook.yml like below :
   ansible-playbook -i inventory playbook.yml
 # Check if service up: 
   ansible -i inventory slaves -m shell -a "service apache2 status"
+
+# We added playbookrollback so we can uninstall the appache2 from the slaves
 
 # Push the Images to DockerHub
 docker push shlomid100/ansible-master
